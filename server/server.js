@@ -47,9 +47,13 @@ app.get('/', function(req, res) {
 });
 
 app.post('/texts', function(req, res) {
-  console.log(req.params);
-  TwilioClient.sendSms({
-    to: req.params.to,
+  var note = req.body.Body;
+  console.log(note);
+
+  // send note to OneNote
+
+  TwilioClient.messages.create({
+    to: req.body.From,
     from: TWILIO_NUMBER,
     body: 'Good luck on your Twilio quest!'
   }, function(err, data) {
