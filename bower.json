@@ -1,0 +1,21 @@
+{
+  "name": "notesms",
+  "description": "",
+  "main": "server/server.js",
+  "authors": [
+    "Thomas Lam",
+    "Grant Park"
+  ],
+  "license": "ISC",
+  "moduleType": [
+    "node"
+  ],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

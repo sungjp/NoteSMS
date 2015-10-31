@@ -1,0 +1,26 @@
+{
+  "name": "notesms",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Thomas Lam, Grant Park",
+  "license": "ISC",
+  "devDependencies": {
+    "body-parser": "^1.14.1",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.0",
+    "csurf": "^1.8.3",
+    "dotenv": "^1.2.0",
+    "express": "^4.13.3",
+    "express-partials": "^0.3.0",
+    "express-session": "^1.12.1",
+    "fs": "0.0.2",
+    "morgan": "^1.6.1",
+    "nodemon": "^1.8.0",
+    "partials": "^0.1.0",
+    "path": "^0.12.7"
+  }
+}
