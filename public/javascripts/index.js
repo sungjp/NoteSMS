@@ -8,7 +8,8 @@ function toQueryString(obj) {
 }
 
 var $loginBtn = $('#loginBtn');
-var $submitBtn = $('#submitBtn');
+var $submitBtnSect = $('#submitBtnSect');
+var $form = $('form');
 
 
 var oauthAuthorizeUrl = 'https://login.live.com/oauth20_authorize.srf',
@@ -60,17 +61,15 @@ $loginBtn.on('click', function() {
   openPopUp(window.authUrl);  
 });
 
-$submitBtn.on('click', function(){
+$form.submit(function(){
       $.ajax({
       type: "POST"
       url: '/phoneNumber',
       data: {id: phoneNumber},
       cache: false,
       success: function(data) {
-        $submitBtn.hide();
+        $submitBtnSect.hide();
         $loginBtn.show();
       }
-  }
-})
-
+  });
 });
