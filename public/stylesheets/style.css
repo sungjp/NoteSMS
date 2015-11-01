@@ -8,6 +8,8 @@ body {
 	color: purple;
 }
 
+
+
 .outer {
    background-color: white;
    color: black;
@@ -86,6 +88,25 @@ a {
 
 #number {
 	font-size:20px;
+}
+
+#submitBtn {
+  border: 0;
+  outline: none;
+  -webkit-border-radius: 11;
+  -moz-border-radius: 11;
+  border-radius: 3px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 11px;
+  background: #7F397A;
+  padding: 4px 7px 4px 7px;
+  text-decoration: none;
+}
+
+#submitBtn:hover {
+  background: #964891;
+  text-decoration: none;
 }
 
 #footer {

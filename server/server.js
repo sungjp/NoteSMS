@@ -126,6 +126,16 @@ var responseWithHTML = function(res, fileName) {
   });
 }
 
+var TwilioMessage = function(res, phone, message) {
+  TwilioClient.messages.create({
+    to: phone,
+    from: TWILIO_NUMBER,
+    body: message
+  }, function(err, data) {
+    // res.send('Message is inbound!');
+  });
+}
+
 app.get('/', function(req, res) {
   responseWithHTML(res, 'index.html')
 });
@@ -165,6 +175,11 @@ app.get('/redirect', function(req, res) {
                     responseWithHTML(res, 'error.html');
                   }
                   console.log('Yay, update MONGODB model success');
+
+                  // if (phone.number.substring(0) === "+") {
+                    console.log("What happedn?");
+                    TwilioMessage(res, phone.number, "Registration successful");
+                  // }
                   responseWithHTML(res, 'callback.html');
                 })
 
@@ -191,13 +206,14 @@ app.get('/redirect', function(req, res) {
 
 app.post('/phoneNumbers', function(req, res) {
   console.log(req.body);
+  var formattedNumber = "+1" + req.body.phone;
   
   // Process req.body.phone here
   // 7143647984 -> +17143647984 
-  var newPhone = new phoneModel({ number: req.body.phone });
+  // var newPhone = new phoneModel({ number: req.body.phone });
   
 
-  phoneModel.create({ number: req.body.phone }, function(err, phone) {
+  phoneModel.create({ number: formattedNumber }, function(err, phone) {
     if (err) {
       console.log('MongoDB error 1');
       res.status(500).end();
@@ -214,16 +230,6 @@ app.post('/phoneNumbers', function(req, res) {
   }); 
   
 });
-
-var TwilioMessage = function(res, phone, message) {
-  TwilioClient.messages.create({
-    to: phone,
-    from: TWILIO_NUMBER,
-    body: message
-  }, function(err, data) {
-    res.send('Message is inbound!');
-  });
-}
 
 // Response to incoming message
 app.post('/texts', function(req, res) {
