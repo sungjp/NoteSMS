@@ -6,6 +6,7 @@
 		<link rel="stylesheet" href="stylesheets/style.css" />
 		<link href='https://fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'>
 		 <script src="dist/jquery/dist/jquery.min.js"></script>
+     <script src="./javascripts/index.js"></script>
 		<script>
 			$(document).ready(function(){
 				$('#loginBtn').hide();
@@ -20,7 +21,12 @@
 					<h2>If you use Microsoft's <a id="onenote" href="https://www.onenote.com/" target="blank_">OneNote</a>, you can create new notes on the fly by sending texts!</h2>
 					<h3>Steps:</h3>
 					<ul id="steps">
-						<li id="submitBtnSect"><b>1. Provide your phone number here: </br> <form id="form" action="" method="POST"><input type="text" name="phoneNumber" onkeypress="return event.charCode > 47 && event.charCode < 58;" pattern="[0-9]{5}" required></input><button type="submit" name="submit" id="submitBtn">Submit</button></form> </b></li>
+						<li id="submitBtnSect"><b>1. Provide your phone number here: </br> 
+              <form id="form" action="/phoneNumbers" method="POST">
+                <input type="text" id="phoneNumber" required></input>
+                <button id="submitBtn">Submit</button>
+              </form> 
+            </b></li>
 						<li id="loginBtn"><b>1. Sign in to <a href="">your Microsoft account.</a></b></li>
 						<li><b>2. Wait for a confirmation.</b></li>
 						<li><b>3. Start texting your new notes!</b></li>

@@ -11,11 +11,31 @@ var request = require('request');
 var _ = require('underscore');
 var engines = require('consolidate');
 
-
 var config = require('./config.js');
+var mongoose = require('mongoose');
+
+mongoose.connect(config.MONGODB_URL, function(err) {
+  if (err) {
+    console.log(err);
+  }
+});
+/**
+ *
+ * TODO: mongodb
+ *
+ */
+
+var PhoneSchema = new mongoose.Schema({
+  number: String,
+  accessToken: String,
+  refreshToken: String,
+  expiresIn: Number
+});
+
+var phoneModel = mongoose.model('Phone', PhoneSchema);
 
 var twilio = require('twilio');
-
+var current_phone_id;
 /**
  *
  * CONFIG stuff
@@ -63,10 +83,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // OAuth variables??
 var oauthTokenUrl = 'https://login.live.com/oauth20_token.srf';
-// var authCode;
-// var accessToken;
-// var refreshToken;
-// var expiresIn;
+var oneNotePagesApiUrl = 'https://www.onenote.com/api/v1.0/pages';
 
 /* Live Connect API request sender */
 var requestAccessToken = function(data, callback) {
@@ -97,21 +114,30 @@ var respOption = {
   root: __dirname + '/../views/'
 }
 
-app.get('/', function(req, res) {
-  res.sendFile('index.html', respOption, function (err) {
+var responseWithHTML = function(res, fileName) {
+  res.sendFile(fileName, respOption, function (err) {
     if (err) {
       console.log(err);
       res.status(err.status).end();
     }
     else {
-      console.log('Sent:', 'index.html');
+      console.log('Sent:', fileName);
     }
   });
+}
+
+app.get('/', function(req, res) {
+  responseWithHTML(res, 'index.html')
 });
 
 app.get('/redirect', function(req, res) {
+  console.log("===============================");
   console.log("redirect from microsoft sign in");
-  console.log('authCode:' + req.query['code']);
+  console.log('authCode:  ' + req.query['code']);
+  console.log("===============================");
+
+  // console.log('Find phone_number_id cookie');
+  // console.log(req.headers);
 
   var authCode = req.query['code'];
 
@@ -122,40 +148,35 @@ app.get('/redirect', function(req, res) {
             var accessToken = responseData['access_token'],
                 refreshToken = responseData['refresh_token'],
                 expiresIn = responseData['expires_in'];
-            console.log("Should have got accessToken, refreshToken");
-            console.log("accessToken: " + accessToken);
-            console.log("");
-            console.log("refreshToken: " + refreshToken);
-            console.log("");
-            console.log("expiresIn: " + expiresIn);
 
             if (accessToken && refreshToken && expiresIn) {
-                // Save the access token on a session. Using cookies in this case:
-                res.cookie('access_token', accessToken, { maxAge: expiresIn * 1000});
-                res.cookie('refresh_token', refreshToken);
 
-                res.sendFile('callback.html', respOption, function (err) {
+                phoneModel.findOneAndUpdate({
+                  "_id": current_phone_id
+                }, {
+                  accessToken: accessToken,
+                  refreshToken: refreshToken,
+                  expiresIn: expiresIn
+                }, {upsert: true}, function(err, phone) {
                   if (err) {
-                    console.log(err);
-                    res.status(err.status).end();
+                    console.log('===========================');
+                    console.log('Error with updating MONGODB model 1');
+                    console.log('===========================');
+                    responseWithHTML(res, 'error.html');
                   }
-                  else {
-                    console.log('Sent:', 'callback.html');
-                  }
-                });
+                  console.log('Yay, update MONGODB model success');
+                  responseWithHTML(res, 'callback.html');
+                })
+
+                console.log('===========================');
+                console.log("Didn't update MONGODB");
+                console.log('===========================');
+                responseWithHTML(res, 'callback.html');
             } else {
                 // Handle an authentication error response
                 console.log('Invalid Live Connect Response');
                 console.log(JSON.stringify(responseData, null, 2));
-                res.sendFile('error.html', respOption, function (err) {
-                  if (err) {
-                    console.log(err);
-                    res.status(err.status).end();
-                  }
-                  else {
-                    console.log('Sent:', 'index.html');
-                  }
-                });
+                responseWithHTML(res, 'error.html');
             }
         });
     } else {
@@ -164,38 +185,85 @@ app.get('/redirect', function(req, res) {
           authErrorDescription = req.query['error_description'];
       console.log('Error: '+authError);
       console.log('Error description: '+authErrorDescription);
-      res.sendFile('error.html', respOption, function (err) {
-        if (err) {
-          console.log(err);
-          res.status(err.status).end();
-        }
-        else {
-          console.log('Sent:', 'index.html');
-        }
-      });
+      responseWithHTML(res, 'error.html');
     }
 })
-// app.use('/redirect', callback);
 
-// app.get('/', function(req, res) {
-//   res.render('index');
-// });
+app.post('/phoneNumbers', function(req, res) {
+  console.log(req.body);
+  
+  // Process req.body.phone here
+  // 7143647984 -> +17143647984 
+  var newPhone = new phoneModel({ number: req.body.phone });
+  
+
+  phoneModel.create({ number: req.body.phone }, function(err, phone) {
+    if (err) {
+      console.log('MongoDB error 1');
+      res.status(500).end();
+    } else {
+      console.log("==================");
+      console.log("New MONGODB model");
+      console.log(phone);
+      console.log("==================");
+
+      current_phone_id = phone._id;
+      console.log("Current phone id: " + current_phone_id);
+      res.status(201).send(phone);
+    }
+  }); 
+  
+});
+
+var TwilioMessage = function(res, phone, message) {
+  TwilioClient.messages.create({
+    to: phone,
+    from: TWILIO_NUMBER,
+    body: message
+  }, function(err, data) {
+    res.send('Message is inbound!');
+  });
+}
 
 // Response to incoming message
 app.post('/texts', function(req, res) {
   var note = req.body.Body;
+  var phoneToMssg = req.body.From;
   console.log(note);
+  console.log('Number is ' + req.body.From);
 
-  // send note to OneNote
-  console.log(req.cookies);
+  /**
+   *
+   * Find number in DB. Retrieve accessToken if found. Call OneNote API with accessToken
+   *
+   */
+  
 
-  TwilioClient.messages.create({
-    to: req.body.From,
-    from: TWILIO_NUMBER,
-    body: 'Good luck on your Twilio quest!'
-  }, function(err, data) {
-    res.send('Message is inbound!');
-  });
+  var query = phoneModel.where({ number: phoneToMssg});
+  query.findOne().exec()
+      .then(function(phone) {
+        if (phone) {
+          var phone_accessToken = phone.accessToken;
+          var oneNotesAPIOption = {
+            url: oneNotePagesApiUrl,
+            headers: {'Authorization': 'Bearer ' + phone_accessToken,
+                      'Content-Type': 'text/html'},
+            body: note
+          }
+          request.post(oneNotesAPIOption, function(err) {
+            if (err) {
+              console.log('OneNote page with notes not created');
+
+            }
+
+            TwilioMessage(res, phoneToMssg, "OneNote page created with your note");
+          })
+        } else {
+          TwilioMessage(res, phoneToMssg, "Uh oh your phone is not in the database");
+        }
+      }, function(err) {
+        TwilioMessage(res, phoneToMssg, "Uh oh cannot save your note at this time");
+      })
 });
 
 // app.get('/redirect', function(req, res) {
@@ -218,10 +286,11 @@ app.use(function (err, req, res, next) {
         res.status(err.status).end();
       }
       else {
-        console.log('Sent:', 'index.html');
+        console.log('Sent:', 'error.html');
       }
     });
 });
 
 app.listen(process.env.PORT || 8000);
 console.log("Server listening on port localhost:8000");
+
