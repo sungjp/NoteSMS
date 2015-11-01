@@ -56,3 +56,8 @@ function openPopUp(url) {
 $loginBtn.on('click', function() {
   openPopUp(window.authUrl);  
 })
+
+// $.ajax({
+//   url: '/phoneNumber',
+//   data: 
+// })
