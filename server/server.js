@@ -11,8 +11,15 @@ var request = require('request');
 var _ = require('underscore');
 var engines = require('consolidate');
 
-
 var config = require('./config.js');
+/**
+ *
+ * TODO: mongodb
+ *
+ */
+
+var db = require('./db/index');
+var phoneModel = db.Phone;
 
 var twilio = require('twilio');
 
@@ -122,11 +129,18 @@ app.get('/redirect', function(req, res) {
             var accessToken = responseData['access_token'],
                 refreshToken = responseData['refresh_token'],
                 expiresIn = responseData['expires_in'];
-            console.log("Should have got accessToken, refreshToken");
+            console.log("accessToken, refreshToken, expiresIn");
+            
+            console.log('Typeof accessToken');
+            console.log(typeof accessToken);
             console.log("accessToken: " + accessToken);
             console.log("");
+            console.log('Typeof refreshToken');
+            console.log(typeof refreshToken);
             console.log("refreshToken: " + refreshToken);
             console.log("");
+            console.log('Typeof expiresIn');
+            console.log(typeof expiresIn);
             console.log("expiresIn: " + expiresIn);
 
             if (accessToken && refreshToken && expiresIn) {
@@ -175,11 +189,31 @@ app.get('/redirect', function(req, res) {
       });
     }
 })
-// app.use('/redirect', callback);
 
-// app.get('/', function(req, res) {
-//   res.render('index');
-// });
+app.post('/phoneNumbers', function(req, res) {
+  console.log(req.body);
+  
+  var newPhone = new phoneModel({ number: req.body.number });
+  console.log(newPhone);
+  /*
+  newPhone.save(function(err) {
+    if (err) {
+      console.log('Sth went wrong 1');
+      res.status(500).end();
+    }
+
+    phoneModel.findById(newPhone, function(err, doc) {
+      if (err) {
+        console.log('Successful DB insertion');
+        res.status(500).end();
+      } else {
+        console.log('Sth went wrong 2');
+        res.status(201).send(doc);
+      } 
+    })
+  }); 
+  */
+});
 
 // Response to incoming message
 app.post('/texts', function(req, res) {
@@ -218,7 +252,7 @@ app.use(function (err, req, res, next) {
         res.status(err.status).end();
       }
       else {
-        console.log('Sent:', 'index.html');
+        console.log('Sent:', 'error.html');
       }
     });
 });
