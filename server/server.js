@@ -16,7 +16,13 @@ var TWILIO_ACCOUNT_SID = config.TWILIO_ACCOUNT_SID;
 var TwilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 var TwimlResp = new twilio.TwimlResponse();
 
+var routes = require('../routes/index');
+var callback = require('../routes/callback');
+
 var app = express();
+
+app.set('views', path.join(__dirname, '../views'));
+app.set('view engine', 'jade');
 
 app.use(partials());
 app.use(bodyParser.json());
@@ -32,11 +38,12 @@ app.use(cookieParser());
 // }));
 
 app.use(express.static(path.join(__dirname, '../public')));
+app.use('/', routes);
+app.use('/redirect', callback);
 
-
-app.get('/', function(req, res) {
-  res.render('index');
-});
+// app.get('/', function(req, res) {
+//   res.render('index');
+// });
 
 // Response to incoming message
 app.post('/texts', function(req, res) {
@@ -44,6 +51,7 @@ app.post('/texts', function(req, res) {
   console.log(note);
 
   // send note to OneNote
+  console.log(req.cookies);
 
   TwilioClient.messages.create({
     to: req.body.From,
@@ -60,15 +68,21 @@ app.post('/texts', function(req, res) {
 
 // catch 404 and forwarding to error handler
 app.use(function (req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
 
 /// error handler
 app.use(function (err, req, res, next) {
-  res.status(err.status || 500);
-  res.render('error');
+    res.status(err.status || 500);
+    res.render('error', {
+        message: err.message,
+        error: {
+            status: err.status,
+            details: err.stack
+        }
+    });
 });
 
 app.listen(process.env.PORT || 8000);
