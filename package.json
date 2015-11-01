@@ -12,9 +12,11 @@
   "devDependencies": {
     "body-parser": "^1.14.1",
     "connect-flash": "^0.1.1",
+    "consolidate": "^0.13.1",
     "cookie-parser": "^1.4.0",
     "csurf": "^1.8.3",
     "dotenv": "^1.2.0",
+    "ejs": "^2.3.4",
     "express": "^4.13.3",
     "express-partials": "^0.3.0",
     "express-session": "^1.12.1",

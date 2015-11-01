@@ -1,4 +1,32 @@
+function toQueryString(obj) {
+  var str = [];
+  for (var p in obj)
+  if (obj.hasOwnProperty(p)) {
+    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+  }
+  return str.join("&");
+}
+
 var $loginBtn = $('#loginBtn');
+var oauthAuthorizeUrl = 'https://login.live.com/oauth20_authorize.srf',
+    oauthTokenUrl = 'https://login.live.com/oauth20_token.srf';
+
+// FUCK IT SHIP IT
+var clientId = '00000000481745E0',
+    redirectUrl = 'https://32e9179f.ngrok.io/redirect',
+    clientSecret = 'kpEn6K/2O7FCzz2d0DRAwcoChscXGiQt';
+
+var scopes = ['wl.signin', 'wl.basic', 'wl.offline_access', 'office.onenote_create'];
+var query = toQueryString({
+    'client_id': clientId,
+    'scope': scopes.join(' '),
+    'redirect_uri': redirectUrl,
+    'display': 'page',
+    'locale': 'en',
+    'response_type': 'code'
+});
+
+window.authUrl = oauthAuthorizeUrl + "?" + query;
 
 function openPopUp(url) {
     var width = 525,
