@@ -8,6 +8,8 @@ body {
 	color: purple;
 }
 
+
+
 .outer {
    background-color: white;
    color: black;
@@ -16,7 +18,7 @@ body {
    border-radius: 30px;
    margin: 0 auto;
    margin-top: 10%;
-   width: 70%;
+   max-width: 900px;
   border-radius: 40px;
 }
 
@@ -48,8 +50,8 @@ a {
 }
 
 .flexitem {
-	margin-left: 40px;
-	margin-right: 40px;
+	margin-left: 30px;
+	margin-right: 30px;
 }
 
 .stepcontainer {
@@ -88,6 +90,25 @@ a {
 	font-size:20px;
 }
 
+#submitBtn {
+  border: 0;
+  outline: none;
+  -webkit-border-radius: 11;
+  -moz-border-radius: 11;
+  border-radius: 3px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 11px;
+  background: #7F397A;
+  padding: 4px 7px 4px 7px;
+  text-decoration: none;
+}
+
+#submitBtn:hover {
+  background: #964891;
+  text-decoration: none;
+}
+
 #footer {
 	width:100%;
 	height:100px;
@@ -101,7 +122,7 @@ a {
 
 @media only screen and (max-width: 700px) {
   #form {
-    margin-left: 0px;
+    margin-left: 10px;
   }
 }
 
