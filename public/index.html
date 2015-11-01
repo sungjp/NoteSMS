@@ -10,6 +10,7 @@
 		<script>
 			$(document).ready(function(){
 				$('#loginBtn').hide();
+        $('#final').hide();
 			});
 		</script>
 	</head>
@@ -27,9 +28,10 @@
                 <button id="submitBtn">Submit</button>
               </form> 
             </b></li>
-						<li id="loginBtn"><b>1. Sign in to <a href="">your Microsoft account.</a></b></li>
-						<li><b>2. Wait for a confirmation.</b></li>
-						<li><b>3. Start texting your new notes!</b></li>
+						<li id="loginBtn"><b>1. Sign in to <a id="btnclickedd" href="">your Microsoft account.</a></b></li>
+						<li class="confirmation"><b>2. Wait for a confirmation.</b></li>
+						<li class="confirmation"><b>3. Start texting your new notes!</b></li>
+            <li id="final"><b>1. Start texting your new notes!</b></li>
 					</ul>
 					<br/>
 					<img height=50px; src="img/microsoft.svg"> <img height=50px; src="img/plus.svg"> <img height=50px; src="img/twilio.svg">
@@ -40,5 +42,14 @@
 			</div>
 		</div>
 		<footer id="footer"><p>&copy; 2015 Grant Park and Thomas Lam. Created at BostonHacks.</p></footer>
+      <script>
+        $(document).ready(function(){
+            $('btnclickedd').on('click',function(){
+              $('.confirmation').hide();
+              $('#final').show();
+            });
+
+        });
+      </script>
 	</body>
 </html>
