@@ -22,7 +22,7 @@ var db = require('./db/index');
 var phoneModel = db.Phone;
 
 var twilio = require('twilio');
-
+var current_phone_id;
 /**
  *
  * CONFIG stuff
@@ -120,6 +120,9 @@ app.get('/redirect', function(req, res) {
   console.log("redirect from microsoft sign in");
   console.log('authCode:' + req.query['code']);
 
+  // console.log('Find phone_number_id cookie');
+  // console.log(req.headers);
+
   var authCode = req.query['code'];
 
   if (authCode) {
@@ -145,8 +148,35 @@ app.get('/redirect', function(req, res) {
 
             if (accessToken && refreshToken && expiresIn) {
                 // Save the access token on a session. Using cookies in this case:
-                res.cookie('access_token', accessToken, { maxAge: expiresIn * 1000});
-                res.cookie('refresh_token', refreshToken);
+                // res.cookie('access_token', accessToken, { maxAge: expiresIn * 1000});
+                // res.cookie('refresh_token', refreshToken);
+
+                phoneModel.findById(current_phone_id)
+                  .exec(function(err, phone) {
+                    if (err) {
+                      console.log('Retrieving phone number from MONGODB error');
+                      return res.status(500).end();
+                    }
+
+                    if (phone == null) {
+                      console.log('No phone number in MONGODB error');
+                      return res.status(404).end();
+                    }
+
+                    phone.accessToken = accessToken;
+                    phone.refreshToken = refreshToken;
+                    phone.expiresIn = expiresIn;
+
+                    phone.save(function(err) {
+                      if (err) {
+                        console.log('Error updating phone models in MONGODB');
+                        res.status(500).end();
+                      } else {
+                        console.log('YAY, updating MONGODB success');
+                        res.status(200).end();
+                      }
+                    })
+                  })
 
                 res.sendFile('callback.html', respOption, function (err) {
                   if (err) {
@@ -193,40 +223,47 @@ app.get('/redirect', function(req, res) {
 app.post('/phoneNumbers', function(req, res) {
   console.log(req.body);
   
-  var newPhone = new phoneModel({ number: req.body.number });
+  var newPhone = new phoneModel({ number: req.body.phone });
   console.log(newPhone);
-  /*
+  
   newPhone.save(function(err) {
     if (err) {
-      console.log('Sth went wrong 1');
+      console.log('MongoDB error 1');
       res.status(500).end();
     }
 
     phoneModel.findById(newPhone, function(err, doc) {
       if (err) {
-        console.log('Successful DB insertion');
+        console.log('MongoDB error 2');
         res.status(500).end();
       } else {
-        console.log('Sth went wrong 2');
+        console.log(doc.number);
+        // Tack onto subsequent requests
+        // res.cookie('phone_number_id', doc._id);
+        current_phone_id = doc._id;
+        console.log(current_phone_id);
         res.status(201).send(doc);
       } 
     })
   }); 
-  */
+  
 });
 
 // Response to incoming message
 app.post('/texts', function(req, res) {
   var note = req.body.Body;
   console.log(note);
+  // console.log('Number is ' + )
 
   // send note to OneNote
   console.log(req.cookies);
 
+  phoneModel.findOne()
+
   TwilioClient.messages.create({
     to: req.body.From,
     from: TWILIO_NUMBER,
-    body: 'Good luck on your Twilio quest!'
+    body: 'Message saved to your OneNote page'
   }, function(err, data) {
     res.send('Message is inbound!');
   });

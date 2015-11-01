@@ -76,7 +76,7 @@ $form.submit(function(event){
     method: "POST",
     url: '/phoneNumbers',
     dataType: 'json',
-    data: {'bob': $phoneNumber.val()},
+    data: {'phone': $phoneNumber.val()},
     error: function(xhr, ajaxOptions, thrownError) {
         console.log(xhr.status);
         console.log(thrownError);
