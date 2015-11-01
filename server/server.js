@@ -70,10 +70,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // OAuth variables??
 var oauthTokenUrl = 'https://login.live.com/oauth20_token.srf';
-// var authCode;
-// var accessToken;
-// var refreshToken;
-// var expiresIn;
+var oneNotePagesApiUrl = 'https://www.onenote.com/api/v1.0/pages';
 
 /* Live Connect API request sender */
 var requestAccessToken = function(data, callback) {
@@ -132,19 +129,6 @@ app.get('/redirect', function(req, res) {
             var accessToken = responseData['access_token'],
                 refreshToken = responseData['refresh_token'],
                 expiresIn = responseData['expires_in'];
-            console.log("accessToken, refreshToken, expiresIn");
-            
-            console.log('Typeof accessToken');
-            console.log(typeof accessToken);
-            console.log("accessToken: " + accessToken);
-            console.log("");
-            console.log('Typeof refreshToken');
-            console.log(typeof refreshToken);
-            console.log("refreshToken: " + refreshToken);
-            console.log("");
-            console.log('Typeof expiresIn');
-            console.log(typeof expiresIn);
-            console.log("expiresIn: " + expiresIn);
 
             if (accessToken && refreshToken && expiresIn) {
                 // Save the access token on a session. Using cookies in this case:
@@ -252,18 +236,68 @@ app.post('/phoneNumbers', function(req, res) {
 // Response to incoming message
 app.post('/texts', function(req, res) {
   var note = req.body.Body;
+  var phoneToMssg = req.body.From;
   console.log(note);
-  // console.log('Number is ' + )
+  console.log('Number is ' + req.body.From);
 
   // send note to OneNote
   console.log(req.cookies);
 
-  phoneModel.findOne()
+  var query = phoneModel.where({ number: phoneToMssg});
+  query.findOne(function(err, phone) {
+    if (err) {
+      TwilioClient.messages.create({
+        to: phoneToMssg,
+        from: TWILIO_NUMBER,
+        body: "Uh oh cannot save your note at this time"
+      }, function(err, data) {
+        res.send('Message is inbound!');
+      });
+    }
+
+    if (phone) {
+
+      /**
+       *
+       * CALL ONENOTE API here
+       *
+       */
+      var phone_accessToken = phone.accessToken;
+      var oneNotesAPIOption = {
+        url: oneNotePagesApiUrl,
+        headers: {'Authorization': 'Bearer ' + phone_accessToken,
+                  'Content-Type': 'text/html'},
+        body: note
+      }
+      request.post(oneNotesAPIOption, function(err) {
+        if (err) {
+          console.log('OneNote page with notes not created');
+
+        }
+        TwilioClient.messages.create({
+          to: phoneToMssg,
+          from: TWILIO_NUMBER,
+          body: 'OneNote page created with your note'
+        }, function(err, data) {
+          res.send('Message is inbound!');
+        });
+      })
+    }
+    else {
+      TwilioClient.messages.create({
+        to: phoneToMssg,
+        from: TWILIO_NUMBER,
+        body: 'Your phone is not found in the database'
+      }, function(err, data) {
+        res.send('Message is inbound!');
+      });
+    }
+  })
 
   TwilioClient.messages.create({
-    to: req.body.From,
+    to: phoneToMssg,
     from: TWILIO_NUMBER,
-    body: 'Message saved to your OneNote page'
+    body: 'Message is being saved to your OneNote page'
   }, function(err, data) {
     res.send('Message is inbound!');
   });
