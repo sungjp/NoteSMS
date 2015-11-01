@@ -59,7 +59,11 @@ app.post('/texts', function(req, res) {
   }, function(err, data) {
     res.send('Message is inbound!');
   });
-})
+});
+
+app.get('/redirect', function(req, res) {
+
+});
 
 //Send an SMS text message
 // TwilioClient.sendMessage({

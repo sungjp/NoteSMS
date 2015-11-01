@@ -23,6 +23,8 @@
     "nodemon": "^1.8.0",
     "partials": "^0.1.0",
     "path": "^0.12.7",
-    "twilio": "^2.5.2"
+    "request": "^2.65.0",
+    "twilio": "^2.5.2",
+    "underscore": "^1.8.3"
   }
 }
